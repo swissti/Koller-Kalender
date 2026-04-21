@@ -693,13 +693,28 @@ async function fetchSheets(){
 
 async function pushToSheets(type,item){
   if(!SHEETS_URL)return;
-  try{await fetch(SHEETS_URL,{method:'POST',body:JSON.stringify({action:'save',type:type,item:item})});setSyncStatus('✓');}
-  catch(e){setSyncStatus('⚠',true);}
+  setSyncStatus('...');
+  try{
+    // Google Apps Script: POST with no-cors + data as query param
+    var payload = JSON.stringify({action:'save',type:type,item:item});
+    var url = SHEETS_URL + '?payload=' + encodeURIComponent(payload);
+    await fetch(url, {method:'GET', mode:'no-cors'});
+    setSyncStatus('✓');
+  }catch(e){
+    setSyncStatus('⚠',true);
+    console.warn('pushToSheets error:',e);
+  }
 }
 async function deleteFromSheets(type,id){
   if(!SHEETS_URL)return;
-  try{await fetch(SHEETS_URL,{method:'POST',body:JSON.stringify({action:'delete',type:type,item:{id:id}})});setSyncStatus('✓');}
-  catch(e){setSyncStatus('⚠',true);}
+  try{
+    var payload = JSON.stringify({action:'delete',type:type,item:{id:id}});
+    var url = SHEETS_URL + '?payload=' + encodeURIComponent(payload);
+    await fetch(url, {method:'GET', mode:'no-cors'});
+    setSyncStatus('✓');
+  }catch(e){
+    setSyncStatus('⚠',true);
+  }
 }
 
 function saveLocal(){
