@@ -74,10 +74,26 @@ html,body{
 .wd{text-align:center;font-size:12px;color:#888;font-weight:600;padding:6px 0;}
 
 /* Kalender Body scrollt */
-.cal-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:0;}
+.cal-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:0;position:relative;}
+.cal-body.swipe-left{animation:swipeLeft 0.22s ease forwards;}
+.cal-body.swipe-right{animation:swipeRight 0.22s ease forwards;}
+@keyframes swipeLeft{from{opacity:1;transform:translateX(0);}to{opacity:0;transform:translateX(-40px);}}
+@keyframes swipeRight{from{opacity:1;transform:translateX(0);}to{opacity:0;transform:translateX(40px);}}
+@keyframes swipeInLeft{from{opacity:0;transform:translateX(40px);}to{opacity:1;transform:translateX(0);}}
+@keyframes swipeInRight{from{opacity:0;transform:translateX(-40px);}to{opacity:1;transform:translateX(0);}}
+.cal-body.swipe-in-left{animation:swipeInLeft 0.22s ease forwards;}
+.cal-body.swipe-in-right{animation:swipeInRight 0.22s ease forwards;}
 .cal-week{border-bottom:0.5px solid #f0f0f0;}
 .day-row{display:grid;grid-template-columns:repeat(7,1fr);padding:0 4px;height:48px;align-items:center;}
-.dn-wrap{display:flex;align-items:center;justify-content:center;cursor:pointer;height:100%;-webkit-tap-highlight-color:transparent;}
+.holiday-col{background:rgba(142,36,170,0.07);border-radius:0;}
+.holiday-col-first{border-radius:8px 0 0 8px;}
+.holiday-col-last{border-radius:0 8px 8px 0;}
+.holiday-col-single{border-radius:8px;}
+.holiday-label-row{display:grid;grid-template-columns:repeat(7,1fr);padding:0 4px 4px;position:relative;}
+.holiday-label{font-size:9px;font-weight:600;color:rgba(142,36,170,0.55);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 2px;line-height:1.3;}
+.dn-wrap{display:flex;align-items:center;justify-content:center;cursor:pointer;height:100%;-webkit-tap-highlight-color:transparent;position:relative;}
+.dn-wrap.holiday-bg{background:rgba(142,36,170,0.08);}
+.dn-wrap.holiday-bg-light{background:rgba(142,36,170,0.05);}
 .dn{font-size:14px;font-weight:500;color:#1a1a1a;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:50%;}
 .dn.today{background:var(--green);color:#fff;}
 .dn.other{color:#bbb;}
@@ -211,6 +227,48 @@ html,body{
 .pd-event-title{font-size:14px;font-weight:600;color:#1a1a1a;}
 .pd-event-date{font-size:12px;color:#888;margin-top:2px;}
 .pd-empty{padding:40px 20px;text-align:center;color:#bbb;font-size:14px;}
+
+/* Settings View */
+.settings-view{position:absolute;inset:0;background:#fff;z-index:15;display:flex;flex-direction:column;transform:translateX(100%);transition:transform 0.28s cubic-bezier(0.4,0,0.2,1);}
+.settings-view.open{transform:translateX(0);}
+.sv-header{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:0.5px solid var(--border);flex-shrink:0;}
+.sv-back{width:36px;height:36px;border-radius:50%;border:1px solid var(--border);background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;-webkit-tap-highlight-color:transparent;}
+.sv-title{font-size:18px;font-weight:700;flex:1;}
+.sv-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:0;padding:16px;}
+.sv-section-title{font-size:11px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px;}
+.label-editor-list{display:flex;flex-direction:column;gap:10px;}
+.label-editor-item{background:var(--bg2);border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:12px;}
+.label-color-btn{width:36px;height:36px;border-radius:50%;border:none;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;}
+.label-color-btn:active{opacity:0.7;}
+.label-name-input{flex:1;padding:8px 10px;font-size:14px;font-weight:500;border:1px solid var(--border);border-radius:8px;background:#fff;color:#1a1a1a;}
+.label-name-input:focus{outline:none;border-color:var(--orange);}
+.label-preview{width:28px;height:20px;border-radius:5px;flex-shrink:0;}
+.color-picker-wrap{position:relative;overflow:hidden;width:0;height:0;}
+.color-picker-wrap input[type=color]{position:absolute;opacity:0;width:36px;height:36px;cursor:pointer;top:0;left:0;}
+.sv-save-btn{width:100%;padding:13px;border-radius:12px;border:none;background:var(--green);color:#fff;font-size:15px;font-weight:700;cursor:pointer;margin-top:20px;-webkit-tap-highlight-color:transparent;}
+.sv-save-btn:active{background:var(--green-dark);}
+.gear-btn{width:34px;height:34px;border-radius:50%;border:1px solid var(--border);background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;flex-shrink:0;}
+.gear-btn:active{background:var(--bg2);}
+
+/* Vacation Tracker */
+.vacation-card{background:var(--bg2);border-radius:14px;padding:14px;margin-bottom:10px;}
+.vacation-card-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.vacation-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
+.vacation-name{font-size:14px;font-weight:600;flex:1;}
+.vacation-year{font-size:11px;color:#888;font-weight:500;}
+.vacation-bar-wrap{background:#e0e0e0;border-radius:20px;height:10px;overflow:hidden;margin-bottom:6px;}
+.vacation-bar{height:10px;border-radius:20px;transition:width 0.4s ease;}
+.vacation-stats{display:flex;justify-content:space-between;align-items:center;}
+.vacation-used{font-size:13px;font-weight:700;}
+.vacation-remaining{font-size:12px;color:#888;}
+.vacation-allowance-row{display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:10px;border-top:0.5px solid var(--border);}
+.vacation-allowance-label{font-size:12px;color:#888;flex:1;}
+.vacation-allowance-input{width:60px;padding:6px 8px;font-size:14px;font-weight:600;border:1px solid var(--border);border-radius:8px;text-align:center;background:#fff;}
+.vacation-allowance-input:focus{outline:none;border-color:var(--orange);}
+
+/* Edit person inline */
+.pd-name-input{font-size:17px;font-weight:600;flex:1;padding:4px 8px;border:1.5px solid var(--orange);border-radius:8px;background:#fff;color:#1a1a1a;min-width:0;}
+.pd-name-input:focus{outline:none;}
 </style>
 </head>
 <body>
@@ -239,6 +297,12 @@ html,body{
     </div>
     <div style="display:flex;align-items:center;gap:8px;">
       <span id="sync-status"></span>
+      <button class="gear-btn" onclick="openSettings()" title="Einstellungen">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="#555" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" stroke="#555" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
       <div style="text-align:right;">
         <div style="font-size:11px;font-weight:600;line-height:1.2;">Koller</div>
         <div style="font-size:10px;color:#888;line-height:1.2;">Appenzellerbeck</div>
@@ -258,32 +322,95 @@ html,body{
         <button class="add-btn" onclick="openNewEvent(null)"><svg width="28" height="28" viewBox="0 0 28 28" fill="none"><path d="M14 4v20M4 14h20" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/></svg></button>
       </div>
       <div class="weekdays-row"><div class="wd">Mo</div><div class="wd">Di</div><div class="wd">Mi</div><div class="wd">Do</div><div class="wd">Fr</div><div class="wd">Sa</div><div class="wd">So</div></div>
-      <div class="cal-body" id="cal-body"></div>
+      <div class="cal-body" id="cal-body"
+  ontouchstart="swipeStart(event)"
+  ontouchend="swipeEnd(event)"></div>
     </div>
 
     <!-- ARBEITSPLÄNE -->
     <div class="view" id="view-plans" style="overflow:hidden;">
-      <div class="page-header"><span>Arbeitspläne</span></div>
+      <div class="page-header"><span id="plans-header-title">Arbeitspläne</span></div>
       <div class="ap-scroll" id="ap-scroll"></div>
       <div class="ap-upload-bar">
         <button class="ap-upload-btn" onclick="openUploadSheet()">
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 12V4M6 6.5L9 4l3 2.5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 13v2a2 2 0 002 2h10a2 2 0 002-2v-2" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
-          Arbeitsplan hochladen
+          <span id="upload-btn-text">Arbeitsplan hochladen</span>
         </button>
       </div>
     </div>
 
     <!-- PERSONEN -->
     <div class="view" id="view-people" style="overflow:hidden;">
-      <div class="page-header"><span>Personen</span></div>
+      <div class="page-header"><span id="people-header-title">Personen</span></div>
       <div class="ppl-list" id="ppl-list"></div>
       <button class="add-ppl-btn" onclick="openAddPerson()">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="#888" stroke-width="2" stroke-linecap="round"/></svg>
-        Person hinzufügen
+        <span id="add-person-text">Person hinzufügen</span>
       </button>
     </div>
 
 
+
+    <!-- SETTINGS VIEW -->
+    <div class="settings-view" id="settings-view">
+      <div class="sv-header">
+        <button class="sv-back" onclick="closeSettings()">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M13 4L7 10l6 6" stroke="#1a1a1a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="sv-title">Einstellungen</div>
+      </div>
+      <div class="sv-body">
+        <div class="sv-section-title">Kategorien / Labels</div>
+        <div class="label-editor-list" id="label-editor-list"></div>
+        <button class="sv-save-btn" onclick="saveSettings()">Speichern</button>
+        
+        <div style="margin-top:28px;padding-top:20px;border-top:0.5px solid var(--border);">
+          <div class="sv-section-title" id="sv-lang-title">Sprache</div>
+          <div style="display:flex;gap:8px;">
+            <button onclick="changeLang('de')" id="lang-btn-de" style="flex:1;padding:12px;border-radius:12px;border:2px solid transparent;background:var(--bg2);font-size:14px;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent;">
+              🇩🇪 Deutsch
+            </button>
+            <button onclick="changeLang('en')" id="lang-btn-en" style="flex:1;padding:12px;border-radius:12px;border:2px solid transparent;background:var(--bg2);font-size:14px;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent;">
+              🇬🇧 English
+            </button>
+            <button onclick="changeLang('pt')" id="lang-btn-pt" style="flex:1;padding:12px;border-radius:12px;border:2px solid transparent;background:var(--bg2);font-size:14px;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent;">
+              🇵🇹 Português
+            </button>
+          </div>
+        </div>
+
+        <div style="margin-top:20px;padding-top:20px;border-top:0.5px solid var(--border);">
+          <div class="sv-section-title" id="sv-vacation-title">Ferientage pro Jahr</div>
+          <div id="vacation-tracker-list"></div>
+          <div style="margin-top:10px;background:var(--bg2);border-radius:12px;padding:12px;display:flex;align-items:center;gap:8px;">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="#888" stroke-width="1.3"/><path d="M8 5v4l2.5 1.5" stroke="#888" stroke-width="1.3" stroke-linecap="round"/></svg>
+            <span style="font-size:12px;color:#666;" id="sv-vacation-hint">Nur Termine mit Label "Ferien bestätigt" werden gezählt.</span>
+          </div>
+        </div>
+
+        <div style="margin-top:20px;padding-top:20px;border-top:0.5px solid var(--border);">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+            <div class="sv-section-title" style="margin-bottom:0">Schulferien Kt. St.Gallen</div>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+              <input type="checkbox" id="schulferien-toggle" onchange="toggleSchulferien(this.checked)" style="width:18px;height:18px;cursor:pointer;">
+              <span style="font-size:12px;color:#666">Anzeigen</span>
+            </label>
+          </div>
+          <div style="background:var(--bg2);border-radius:12px;padding:12px;font-size:12px;color:#666;">
+            Schulferien 2024–2027 + gesetzliche Feiertage Kanton St.Gallen werden als Hintergrund-Einträge im Kalender angezeigt.
+          </div>
+        </div>
+
+        <div style="margin-top:20px;padding-top:20px;border-top:0.5px solid var(--border);">
+          <div class="sv-section-title">Google Sheets</div>
+          <div style="background:var(--bg2);border-radius:12px;padding:14px;">
+            <div style="font-size:13px;color:#666;margin-bottom:10px;">Verbundene URL:</div>
+            <div style="font-size:11px;color:#888;word-break:break-all;background:#fff;padding:8px;border-radius:8px;border:1px solid var(--border)" id="sheets-url-display">Nicht verbunden</div>
+            <button onclick="resetSheetsUrl()" style="margin-top:10px;width:100%;padding:10px;border-radius:10px;border:1px solid var(--red);background:transparent;color:var(--red);font-size:13px;cursor:pointer;">URL zurücksetzen</button>
+          </div>
+        </div>
+      </div>
+    </div>
     <!-- PERSON DETAIL -->
     <div class="person-detail-view" id="person-detail">
       <div class="pd-header">
@@ -291,7 +418,13 @@ html,body{
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M13 4L7 10l6 6" stroke="#1a1a1a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
         <div class="pd-avatar" id="pd-avatar"></div>
-        <div class="pd-name" id="pd-name"></div>
+        <div class="pd-name" id="pd-name" style="flex:1;"></div>
+        <button class="icon-btn" onclick="openEditPerson()" style="margin-right:6px;" title="Name ändern">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M10.5 2.5l2 2L5 12H3v-2L10.5 2.5z" stroke="#555" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="icon-btn" onclick="confirmDeletePerson()" style="border-color:rgba(226,75,74,0.4);" title="Person löschen">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2.5 4h10M6 4V2.5h3V4M5 4l.5 9M7.5 4v9M10 4l-.5 9" stroke="#E24B4A" stroke-width="1.4" stroke-linecap="round"/></svg>
+        </button>
       </div>
       <div class="pd-body" id="pd-body"></div>
     </div>
@@ -341,6 +474,173 @@ var LABELS=[
 ];
 var PALETTE=[{bg:'#4DB6AC',text:'#fff'},{bg:'#64B5F6',text:'#fff'},{bg:'#F48FB1',text:'#fff'},{bg:'#FFB74D',text:'#fff'},{bg:'#A5D6A7',text:'#fff'},{bg:'#CE93D8',text:'#fff'},{bg:'#EF9A9A',text:'#fff'},{bg:'#90A4AE',text:'#fff'}];
 var FILE_COLORS={pdf:{bg:'#FFCDD2',text:'#B71C1C'},xlsx:{bg:'#C8E6C9',text:'#1B5E20'},xls:{bg:'#C8E6C9',text:'#1B5E20'}};
+// ================================================================
+// SPRACHEN / LANGUAGES
+// ================================================================
+var TRANSLATIONS = {
+  de: {
+    months: ['Januar','Februar','M\u00e4rz','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'],
+    shortMonths: ['Jan','Feb','M\u00e4r','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'],
+    weekdays: ['Mo','Di','Mi','Do','Fr','Sa','So'],
+    nav: {calendar:'Kalender', plans:'Arbeitspl\u00e4ne', people:'Personen'},
+    ui: {
+      newEvent:'Neuer Termin', editEvent:'Termin bearbeiten', save:'Speichern',
+      cancel:'Abbrechen', delete:'L\u00f6schen', edit:'Bearbeiten',
+      title:'Titel', from:'Von', to:'Bis', time:'Uhrzeit (optional)',
+      category:'Kategorie', person:'Person', note:'Notiz',
+      singleDay:'Einzeltermin', days:'Tage', optional:'Optional...',
+      titlePlaceholder:'z.B. Urlaub...',
+      plans:'Arbeitspl\u00e4ne', uploadPlan:'Arbeitsplan hochladen',
+      week:'Woche (Montag ausw\u00e4hlen)', uploadedBy:'Von',
+      selectFile:'Bild oder Datei ausw\u00e4hlen', fileTypes:'PNG, JPG, PDF oder Excel',
+      thisWeek:'Diese Woche', nextWeek:'N\u00e4chste Woche',
+      weekAfter:'\u00dcbern\u00e4chste Woche', future:'Zuk\u00fcnftig', past:'Vergangen',
+      upcoming:'Bevorstehend', noEvents:'Keine Termine f\u00fcr ',
+      noPlans:'Noch keine Arbeitspl\u00e4ne. Lade einen Plan unten hoch.',
+      addPerson:'Person hinzuf\u00fcgen', name:'Name', color:'Farbe',
+      settings:'Einstellungen', labels:'Kategorien / Labels',
+      labelsSaved:'Labels gespeichert', saved:'Gespeichert',
+      deleted:'Termin gel\u00f6scht', logoUpdated:'Logo aktualisiert',
+      logoReset:'Logo zur\u00fcckgesetzt', uploaded:'Hochgeladen',
+      planSaved:'Arbeitsplan gespeichert', addedSuffix:' hinzugef\u00fcgt',
+      sheetsUrl:'Google Sheets URL', notConnected:'Nicht verbunden',
+      resetUrl:'URL zur\u00fccksetzen', resetUrlConfirm:'Google Sheets URL zur\u00fccksetzen?',
+      resetUrlDone:'URL zur\u00fcckgesetzt - bitte neu laden',
+      language:'Sprache', connect:'Verbinden & starten',
+      startLocal:'Ohne Sheets starten (nur lokal)',
+      pleaseEnterTitle:'Bitte Titel eingeben',
+      pleaseEnterDate:'Bitte Datum eingeben',
+      back:'Zur\u00fcck',
+      weekLabel:'Woche: ',
+      vacationTitle:'Ferientage pro Jahr',
+      vacationRemaining:' verbleibend',
+      vacationOver:' \u00fcberzogen',
+      vacationAllowance:'Anspruch (Tage/Jahr):',
+      vacationHint:'Nur Termine mit Label Ferien best\u00e4tigt werden gez\u00e4hlt.'
+    },
+    defaultLabels: ['Ferien Anfrage','Ferien best\u00e4tigt','Meeting','Feiertag','Arzttermin','Sonstiges']
+  },
+  en: {
+    months: ['January','February','March','April','May','June','July','August','September','October','November','December'],
+    shortMonths: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+    weekdays: ['Mo','Tu','We','Th','Fr','Sa','Su'],
+    nav: {calendar:'Calendar', plans:'Work Plans', people:'People'},
+    ui: {
+      newEvent:'New Event', editEvent:'Edit Event', save:'Save',
+      cancel:'Cancel', delete:'Delete', edit:'Edit',
+      title:'Title', from:'From', to:'To', time:'Time (optional)',
+      category:'Category', person:'Person', note:'Note',
+      singleDay:'Single day', days:'days', optional:'Optional...',
+      titlePlaceholder:'e.g. Vacation...',
+      plans:'Work Plans', uploadPlan:'Upload Work Plan',
+      week:'Week (select Monday)', uploadedBy:'By',
+      selectFile:'Select image or file', fileTypes:'PNG, JPG, PDF or Excel',
+      thisWeek:'This Week', nextWeek:'Next Week',
+      weekAfter:'Week After Next', future:'Future', past:'Past',
+      upcoming:'Upcoming', noEvents:'No events for ',
+      noPlans:'No work plans yet. Upload a plan below.',
+      addPerson:'Add Person', name:'Name', color:'Color',
+      settings:'Settings', labels:'Categories / Labels',
+      labelsSaved:'Labels saved', saved:'Saved',
+      deleted:'Event deleted', logoUpdated:'Logo updated',
+      logoReset:'Logo reset', uploaded:'Uploaded',
+      planSaved:'Work plan saved', addedSuffix:' added',
+      sheetsUrl:'Google Sheets URL', notConnected:'Not connected',
+      resetUrl:'Reset URL', resetUrlConfirm:'Reset Google Sheets URL?',
+      resetUrlDone:'URL reset - please reload',
+      language:'Language', connect:'Connect & Start',
+      startLocal:'Start without Sheets (local only)',
+      pleaseEnterTitle:'Please enter a title',
+      pleaseEnterDate:'Please enter a date',
+      back:'Back',
+      weekLabel:'Week: ',
+      vacationTitle:'Holiday days per year',
+      vacationRemaining:' remaining',
+      vacationOver:' exceeded',
+      vacationAllowance:'Allowance (days/year):',
+      vacationHint:'Only events with label Leave Approved are counted.'
+    },
+    defaultLabels: ['Leave Request','Leave Approved','Meeting','Holiday','Doctor','Other']
+  },
+  pt: {
+    months: ['Janeiro','Fevereiro','Marco','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'],
+    shortMonths: ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'],
+    weekdays: ['Se','Te','Qu','Qu','Se','Sa','Do'],
+    nav: {calendar:'Calend\u00e1rio', plans:'Escalas', people:'Pessoas'},
+    ui: {
+      newEvent:'Novo Evento', editEvent:'Editar Evento', save:'Guardar',
+      cancel:'Cancelar', delete:'Apagar', edit:'Editar',
+      title:'T\u00edtulo', from:'De', to:'At\u00e9', time:'Hora (opcional)',
+      category:'Categoria', person:'Pessoa', note:'Nota',
+      singleDay:'Dia \u00fanico', days:'dias', optional:'Opcional...',
+      titlePlaceholder:'ex. F\u00e9rias...',
+      plans:'Escalas', uploadPlan:'Carregar Escala',
+      week:'Semana (selecionar segunda-feira)', uploadedBy:'Por',
+      selectFile:'Selecionar imagem ou ficheiro', fileTypes:'PNG, JPG, PDF ou Excel',
+      thisWeek:'Esta Semana', nextWeek:'Pr\u00f3xima Semana',
+      weekAfter:'Semana Seguinte', future:'Futuro', past:'Passado',
+      upcoming:'Pr\u00f3ximos', noEvents:'Sem eventos para ',
+      noPlans:'Sem escalas ainda. Carregue uma escala abaixo.',
+      addPerson:'Adicionar Pessoa', name:'Nome', color:'Cor',
+      settings:'Defini\u00e7\u00f5es', labels:'Categorias / Labels',
+      labelsSaved:'Labels guardados', saved:'Guardado',
+      deleted:'Evento apagado', logoUpdated:'Logo atualizado',
+      logoReset:'Logo reposto', uploaded:'Carregado',
+      planSaved:'Escala guardada', addedSuffix:' adicionado',
+      sheetsUrl:'URL Google Sheets', notConnected:'N\u00e3o ligado',
+      resetUrl:'Repor URL', resetUrlConfirm:'Repor URL do Google Sheets?',
+      resetUrlDone:'URL reposto - por favor recarregar',
+      language:'Idioma', connect:'Ligar & Iniciar',
+      startLocal:'Iniciar sem Sheets (apenas local)',
+      pleaseEnterTitle:'Por favor insira um t\u00edtulo',
+      pleaseEnterDate:'Por favor insira uma data',
+      back:'Voltar',
+      weekLabel:'Semana: ',
+      vacationTitle:'Dias de f\u00e9rias por ano',
+      vacationRemaining:' restantes',
+      vacationOver:' excedidos',
+      vacationAllowance:'Direito (dias/ano):',
+      vacationHint:'Apenas eventos com o label F\u00e9rias Aprovadas s\u00e3o contados.'
+    },
+    defaultLabels: ['Pedido F\u00e9rias','F\u00e9rias Aprovadas','Reuni\u00e3o','Feriado','M\u00e9dico','Outros']
+  }
+};
+
+var currentLang = localStorage.getItem('kk_lang') || 'de';
+function t(key){ return TRANSLATIONS[currentLang].ui[key] || key; }
+function setLang(lang){
+  currentLang = lang;
+  localStorage.setItem('kk_lang', lang);
+  MONTHS = TRANSLATIONS[lang].months;
+  SHORT_MONTHS = TRANSLATIONS[lang].shortMonths;
+  applyLangToDOM();
+  renderCal();
+  renderPeople();
+  renderPlans();
+}
+function applyLangToDOM(){
+  var tr = TRANSLATIONS[currentLang];
+  // Nav labels
+  var navMap = {cal:'calendar', plans:'plans', people:'people'};
+  Object.keys(navMap).forEach(function(k){
+    var el = document.querySelector('#nav-'+k+' .nav-label');
+    if(el) el.textContent = tr.nav[navMap[k]];
+  });
+  // Weekday headers
+  var wds = document.querySelectorAll('.wd');
+  wds.forEach(function(el,i){ el.textContent = tr.weekdays[i]; });
+  // Page headers & buttons
+  var ph = document.getElementById('plans-header-title');
+  if(ph) ph.textContent = tr.nav.plans;
+  var pp = document.getElementById('people-header-title');
+  if(pp) pp.textContent = tr.nav.people;
+  var ub = document.getElementById('upload-btn-text');
+  if(ub) ub.textContent = tr.ui.uploadPlan;
+  var ap = document.getElementById('add-person-text');
+  if(ap) ap.textContent = tr.ui.addPerson;
+}
+
+
 var AC='#1D9E75';
 var DEFAULT_LOGO='data:image/svg+xml;base64,'+btoa('<svg width="120" height="44" viewBox="0 0 120 44" xmlns="http://www.w3.org/2000/svg"><text x="2" y="26" font-family="Georgia,serif" font-size="26" font-style="italic" font-weight="bold" fill="#1a1a1a">Koller</text><ellipse cx="52" cy="36" rx="10" ry="6" fill="#EF9F27"/><text x="2" y="42" font-family="Arial,sans-serif" font-size="8" fill="#666" letter-spacing="1">APPENZELLERBECK</text></svg>');
 
@@ -440,6 +740,107 @@ function loadLocal(){
   }catch(e){console.warn('localStorage load failed',e);}
 }
 
+
+// ================================================================
+// SCHULFERIEN KANTON ST. GALLEN (Quelle: sg.ch Volksschule)
+// ================================================================
+
+var SCHULFERIEN_SG = [
+  // Schuljahr 2024/25
+  {title:'Herbstferien SG', start:'2024-10-05', end:'2024-10-20', lid:'feiertag'},
+  {title:'Weihnachtsferien SG', start:'2024-12-21', end:'2025-01-05', lid:'feiertag'},
+  {title:'Winterferien SG', start:'2025-01-25', end:'2025-02-02', lid:'feiertag'},
+  {title:'Österferien SG', start:'2025-04-12', end:'2025-04-20', lid:'feiertag'},
+  {title:'Sommerferien SG', start:'2025-07-05', end:'2025-08-10', lid:'feiertag'},
+
+  // Schuljahr 2025/26
+  {title:'Herbstferien SG', start:'2025-09-27', end:'2025-10-19', lid:'feiertag'},
+  {title:'Weihnachtsferien SG', start:'2025-12-20', end:'2026-01-04', lid:'feiertag'},
+  {title:'Winterferien SG', start:'2026-01-24', end:'2026-02-01', lid:'feiertag'},
+  {title:'Frühlingsferien SG', start:'2026-04-03', end:'2026-04-19', lid:'feiertag'},
+  {title:'Auffahrtsbrücke SG', start:'2026-05-15', end:'2026-05-15', lid:'feiertag'},
+  {title:'Sommerferien SG', start:'2026-07-04', end:'2026-08-09', lid:'feiertag'},
+
+  // Schuljahr 2026/27
+  {title:'Herbstferien SG', start:'2026-09-26', end:'2026-10-18', lid:'feiertag'},
+  {title:'Weihnachtsferien SG', start:'2026-12-19', end:'2027-01-03', lid:'feiertag'},
+  {title:'Winterferien SG', start:'2027-01-30', end:'2027-02-07', lid:'feiertag'},
+  {title:'Frühlingsferien SG', start:'2027-04-10', end:'2027-04-25', lid:'feiertag'},
+  {title:'Auffahrtsbrücke SG', start:'2027-05-07', end:'2027-05-07', lid:'feiertag'},
+  {title:'Sommerferien SG', start:'2027-07-10', end:'2027-08-15', lid:'feiertag'},
+
+  // Schuljahr 2027/28
+  {title:'Herbstferien SG', start:'2027-10-02', end:'2027-10-24', lid:'feiertag'},
+  {title:'Weihnachtsferien SG', start:'2027-12-18', end:'2028-01-02', lid:'feiertag'},
+];
+
+// Feiertage Kanton St.Gallen (gesetzliche)
+var FEIERTAGE_SG = [
+  // 2025
+  {title:'Neujahr', start:'2025-01-01', end:'2025-01-01', lid:'feiertag'},
+  {title:'Karfreitag', start:'2025-04-18', end:'2025-04-18', lid:'feiertag'},
+  {title:'Ostermontag', start:'2025-04-21', end:'2025-04-21', lid:'feiertag'},
+  {title:'Tag der Arbeit', start:'2025-05-01', end:'2025-05-01', lid:'feiertag'},
+  {title:'Auffahrt', start:'2025-05-29', end:'2025-05-29', lid:'feiertag'},
+  {title:'Pfingstmontag', start:'2025-06-09', end:'2025-06-09', lid:'feiertag'},
+  {title:'Bundesfeier', start:'2025-08-01', end:'2025-08-01', lid:'feiertag'},
+  {title:'Allerheiligen', start:'2025-11-01', end:'2025-11-01', lid:'feiertag'},
+  {title:'Weihnachten', start:'2025-12-25', end:'2025-12-26', lid:'feiertag'},
+  // 2026
+  {title:'Neujahr', start:'2026-01-01', end:'2026-01-01', lid:'feiertag'},
+  {title:'Karfreitag', start:'2026-04-03', end:'2026-04-03', lid:'feiertag'},
+  {title:'Ostermontag', start:'2026-04-06', end:'2026-04-06', lid:'feiertag'},
+  {title:'Tag der Arbeit', start:'2026-05-01', end:'2026-05-01', lid:'feiertag'},
+  {title:'Auffahrt', start:'2026-05-14', end:'2026-05-14', lid:'feiertag'},
+  {title:'Pfingstmontag', start:'2026-05-25', end:'2026-05-25', lid:'feiertag'},
+  {title:'Bundesfeier', start:'2026-08-01', end:'2026-08-01', lid:'feiertag'},
+  {title:'Allerheiligen', start:'2026-11-01', end:'2026-11-01', lid:'feiertag'},
+  {title:'Weihnachten', start:'2026-12-25', end:'2026-12-26', lid:'feiertag'},
+  // 2027
+  {title:'Neujahr', start:'2027-01-01', end:'2027-01-01', lid:'feiertag'},
+  {title:'Karfreitag', start:'2027-03-26', end:'2027-03-26', lid:'feiertag'},
+  {title:'Ostermontag', start:'2027-03-29', end:'2027-03-29', lid:'feiertag'},
+  {title:'Tag der Arbeit', start:'2027-05-01', end:'2027-05-01', lid:'feiertag'},
+  {title:'Auffahrt', start:'2027-05-06', end:'2027-05-06', lid:'feiertag'},
+  {title:'Pfingstmontag', start:'2027-05-17', end:'2027-05-17', lid:'feiertag'},
+  {title:'Bundesfeier', start:'2027-08-01', end:'2027-08-01', lid:'feiertag'},
+  {title:'Allerheiligen', start:'2027-11-01', end:'2027-11-01', lid:'feiertag'},
+  {title:'Weihnachten', start:'2027-12-25', end:'2027-12-26', lid:'feiertag'},
+];
+
+var SCHULFERIEN_LOADED = false;
+
+function loadSchulferien() {
+  // Check if user has disabled school holidays
+  var pref = localStorage.getItem('kk_schulferien');
+  if (pref === '0') return;
+  // Only add if not already present (check by title+start)
+  var existing = {};
+  events.forEach(function(e){ existing[e.title+'_'+e.start] = true; });
+
+  var allHolidays = SCHULFERIEN_SG.concat(FEIERTAGE_SG);
+  var added = 0;
+  allHolidays.forEach(function(h) {
+    var key = h.title + '_' + h.start;
+    if (!existing[key]) {
+      events.push({
+        id: nextEid++,
+        title: h.title,
+        start: h.start,
+        end: h.end,
+        ts: '', te: '', note: 'Kanton St.Gallen',
+        pid: 0,  // 0 = kein Person-Filter
+        lid: h.lid
+      });
+      added++;
+    }
+  });
+  if (added > 0) {
+    saveLocal();
+  }
+  SCHULFERIEN_LOADED = true;
+}
+
 function addDefaults(){if(!persons.length){persons=[{id:1,name:'Anna',color:{bg:'#4DB6AC',text:'#fff'}},{id:2,name:'Ben',color:{bg:'#64B5F6',text:'#fff'}},{id:3,name:'Clara',color:{bg:'#F48FB1',text:'#fff'}}];}}
 
 // ---- Setup ----
@@ -457,8 +858,15 @@ async function launch(withSheets){
   document.getElementById('logo-img').src=currentLogoSrc;
   // Immer zuerst lokal laden — so sind Daten sofort sichtbar
   loadLocal();
+  loadLabels();
+  // Load saved language
+  currentLang = localStorage.getItem('kk_lang') || 'de';
+  MONTHS = TRANSLATIONS[currentLang].months;
+  SHORT_MONTHS = TRANSLATIONS[currentLang].shortMonths;
   addDefaults();
+  loadSchulferien();
   initViews();
+  applyLangToDOM();
   renderCal();
   // Dann mit Sheets synchronisieren (im Hintergrund)
   if(withSheets){
@@ -490,6 +898,12 @@ function switchView(v){
   ['cal','plans','people'].forEach(function(name){var el=document.getElementById('view-'+name);el.classList.remove('active');el.style.display='none';});
   var a=document.getElementById('view-'+v);a.classList.add('active');a.style.display='flex';
   setNavActive(v);
+  // Profil-Ansicht schliessen beim Wechsel
+  var pd=document.getElementById('person-detail');
+  if(pd&&pd.classList.contains('open')){pd.classList.remove('open');setTimeout(function(){pd.style.display='none';},280);}
+  // Settings schliessen beim Wechsel
+  var sv=document.getElementById('settings-view');
+  if(sv&&sv.classList.contains('open')){sv.classList.remove('open');setTimeout(function(){sv.style.display='none';},280);}
   if(v==='people')renderPeople();
   if(v==='plans')renderPlans();
 }
@@ -510,7 +924,8 @@ function renderCal(){
   var body=document.getElementById('cal-body');body.innerHTML='';
   for(var w=0;w<weeks;w++){
     var wc=cells.slice(w*7,(w+1)*7);var wStart=wc[0].date,wEnd=wc[6].date;
-    var wEvents=events.filter(function(ev){return ev.end>=wStart&&ev.start<=wEnd;});
+    // Feiertag events only show as background color, not as bars
+    var wEvents=events.filter(function(ev){return ev.end>=wStart&&ev.start<=wEnd&&ev.lid!=='feiertag';});
     var slots=[];var used=[];for(var u=0;u<7;u++)used.push({});
     wEvents.forEach(function(ev){
       var cs=ev.start<wStart?wStart:ev.start;var ce=ev.end>wEnd?wEnd:ev.end;
@@ -524,7 +939,42 @@ function renderCal(){
     if(slots.length>MAX){for(var s=MAX;s<slots.length;s++){(slots[s]||[]).forEach(function(x){for(var c=x.sc;c<=x.ec;c++)hidden[c]++;});}}
     var wd=document.createElement('div');wd.className='cal-week';
     var dr=document.createElement('div');dr.className='day-row';
-    wc.forEach(function(cell){var wrap=document.createElement('div');wrap.className='dn-wrap';(function(d){wrap.onclick=function(){openNewEvent(d);};})(cell.date);var dn=document.createElement('div');dn.className='dn'+(cell.isOther?' other':'')+(cell.isToday?' today':'');dn.textContent=cell.day;wrap.appendChild(dn);dr.appendChild(wrap);});
+
+    // Build set of holiday dates for this week
+    var holidayDates = {};
+    events.forEach(function(ev){
+      if(ev.lid !== 'feiertag') return;
+      if(ev.end < wStart || ev.start > wEnd) return;
+      // Mark each day of this event that falls in the week
+      var cur2 = ev.start < wStart ? wStart : ev.start;
+      var last = ev.end > wEnd ? wEnd : ev.end;
+      var d = new Date(cur2.split('-')[0], parseInt(cur2.split('-')[1])-1, parseInt(cur2.split('-')[2]));
+      var endD = new Date(last.split('-')[0], parseInt(last.split('-')[1])-1, parseInt(last.split('-')[2]));
+      while(d <= endD){
+        var ds = dstr(d.getFullYear(), d.getMonth(), d.getDate());
+        holidayDates[ds] = true;
+        d.setDate(d.getDate()+1);
+      }
+    });
+
+    wc.forEach(function(cell, ci){
+      var wrap=document.createElement('div');
+      wrap.className='dn-wrap';
+      // Add holiday background if this date is a feiertag
+      if(holidayDates[cell.date]){
+        var isPrev = ci > 0 && holidayDates[wc[ci-1].date];
+        var isNext = ci < 6 && holidayDates[wc[ci+1].date];
+        if(!isPrev && !isNext) wrap.classList.add('holiday-col','holiday-col-single');
+        else if(!isPrev) wrap.classList.add('holiday-col','holiday-col-first');
+        else if(!isNext) wrap.classList.add('holiday-col','holiday-col-last');
+        else wrap.classList.add('holiday-col');
+      }
+      (function(d){wrap.onclick=function(){openNewEvent(d);};})(cell.date);
+      var dn=document.createElement('div');
+      dn.className='dn'+(cell.isOther?' other':'')+(cell.isToday?' today':'');
+      dn.textContent=cell.day;
+      wrap.appendChild(dn);dr.appendChild(wrap);
+    });
     wd.appendChild(dr);
     var er=document.createElement('div');er.className='event-rows';
     for(var s=0;s<Math.min(slots.length,MAX);s++){
@@ -541,9 +991,70 @@ function renderCal(){
       er.appendChild(rd);
     }
     if(hidden.some(function(x){return x>0;})){var mr=document.createElement('div');mr.className='more-row';wc.forEach(function(_,i){var c=document.createElement('div');c.className='more-cell';if(hidden[i]>0)c.textContent='+'+hidden[i];mr.appendChild(c);});er.appendChild(mr);}
+    // Add faint holiday name labels at bottom of each day
+    var hlRow = document.createElement('div');
+    hlRow.className = 'holiday-label-row';
+    var hasHolidayLabels = false;
+    wc.forEach(function(cell, ci) {
+      var cell_el = document.createElement('div');
+      cell_el.className = 'holiday-label';
+      // Find feiertag event on this exact date (show name on first day only)
+      var found = null;
+      events.forEach(function(ev) {
+        if(ev.lid !== 'feiertag') return;
+        if(ev.start === cell.date) { found = ev; }
+        // For multi-day: show label on first visible day of week
+        else if(ev.start < wStart && cell.date === wStart && ev.end >= wStart) { found = ev; }
+      });
+      if(found) {
+        // Shorten name to fit
+        var name = found.title;
+        if(name.length > 10) name = name.slice(0, 9) + '…';
+        cell_el.textContent = name;
+        hasHolidayLabels = true;
+      }
+      hlRow.appendChild(cell_el);
+    });
+    if(hasHolidayLabels) er.appendChild(hlRow);
     wd.appendChild(er);body.appendChild(wd);
   }
 }
+// Swipe to change month
+var _swipeX=0, _swipeY=0, _swipeLocked=false;
+function swipeStart(e){
+  _swipeX=e.touches[0].clientX;
+  _swipeY=e.touches[0].clientY;
+  _swipeLocked=false;
+}
+function swipeEnd(e){
+  if(_swipeLocked)return;
+  var dx=e.changedTouches[0].clientX-_swipeX;
+  var dy=e.changedTouches[0].clientY-_swipeY;
+  // Only trigger if horizontal swipe is dominant and long enough
+  if(Math.abs(dx)<50||Math.abs(dx)<Math.abs(dy)*1.5)return;
+  _swipeLocked=true;
+  var body=document.getElementById('cal-body');
+  if(dx<0){
+    // Swipe left = next month
+    body.classList.add('swipe-left');
+    setTimeout(function(){
+      body.classList.remove('swipe-left');
+      changeMonth(1);
+      body.classList.add('swipe-in-left');
+      setTimeout(function(){body.classList.remove('swipe-in-left');},220);
+    },180);
+  } else {
+    // Swipe right = prev month
+    body.classList.add('swipe-right');
+    setTimeout(function(){
+      body.classList.remove('swipe-right');
+      changeMonth(-1);
+      body.classList.add('swipe-in-right');
+      setTimeout(function(){body.classList.remove('swipe-in-right');},220);
+    },180);
+  }
+}
+
 function changeMonth(d){cur.month+=d;if(cur.month>11){cur.month=0;cur.year++;}if(cur.month<0){cur.month=11;cur.year--;}renderCal();}
 
 // ---- Arbeitspläne ----
@@ -616,9 +1127,20 @@ function renderPeople(){
   list.innerHTML='';
   persons.forEach(function(p){
     var cnt=events.filter(function(e){return e.pid===p.id;}).length;
+    var vac=getVacationSummary(p.id);
+    var vacColor=vac.remaining<0?'#E53935':vac.remaining<=5?'#EF9F27':'#1D9E75';
+    var vacText=vac.used+'/'+vac.allowance+' Tage';
     var item=document.createElement('div');
     item.className='ppl-item';
-    item.innerHTML='<div class="ppl-avatar" style="background:'+p.color.bg+';color:'+p.color.text+'">'+ini(p.name)+'</div><div style="flex:1"><div style="font-size:15px;font-weight:600">'+p.name+'</div><div style="font-size:12px;color:#888;margin-top:2px">'+cnt+' Termin'+(cnt!==1?'e':'')+'</div></div><span style="color:#bbb;font-size:20px">›</span>';
+    item.innerHTML='<div class="ppl-avatar" style="background:'+p.color.bg+';color:'+p.color.text+'">'+ini(p.name)+'</div>' +
+      '<div style="flex:1">' +
+        '<div style="font-size:15px;font-weight:600">'+p.name+'</div>' +
+        '<div style="display:flex;align-items:center;gap:8px;margin-top:2px;">' +
+          '<span style="font-size:12px;color:#888">'+cnt+' Termin'+(cnt!==1?'e':'')+'</span>' +
+          '<span style="font-size:11px;font-weight:600;color:'+vacColor+';background:'+vacColor+'22;padding:1px 7px;border-radius:10px">'+vacText+' Ferien</span>' +
+        '</div>' +
+      '</div>' +
+      '<span style="color:#bbb;font-size:20px">›</span>';
     (function(pid){item.onclick=function(){openPersonDetail(pid);};})(p.id);
     list.appendChild(item);
   });
@@ -631,11 +1153,29 @@ function openPersonDetail(pid){
   av.style.background=p.color.bg;
   av.style.color=p.color.text;
   av.textContent=ini(p.name);
+  _editingPersonId = pid;
   document.getElementById('pd-name').textContent=p.name;
   var pEvents=events.filter(function(e){return e.pid===pid;}).slice().sort(function(a,b){return a.start.localeCompare(b.start);});
   var body=document.getElementById('pd-body');
+  // Show vacation summary at top
+  var vac = getVacationSummary(pid);
+  var vacPct = Math.min(100, Math.round(vac.used/vac.allowance*100));
+  var vacColor = vac.remaining < 0 ? '#E53935' : vac.remaining <= 5 ? '#EF9F27' : '#1D9E75';
+  var vacHtml = '<div style="margin:14px 16px 0;background:var(--bg2);border-radius:14px;padding:14px;">' +
+    '<div style="display:flex;justify-content:space-between;margin-bottom:8px;">' +
+      '<span style="font-size:13px;font-weight:600">Ferientage ' + vac.year + '</span>' +
+      '<span style="font-size:13px;font-weight:700;color:'+vacColor+'">' + vac.used + ' / ' + vac.allowance + ' Tage</span>' +
+    '</div>' +
+    '<div style="background:#e0e0e0;border-radius:20px;height:8px;overflow:hidden;">' +
+      '<div style="width:'+vacPct+'%;height:8px;border-radius:20px;background:'+vacColor+';transition:width 0.4s"></div>' +
+    '</div>' +
+    '<div style="margin-top:6px;font-size:12px;color:#888;">' +
+      (vac.remaining >= 0 ? vac.remaining + ' Tage verbleibend' : Math.abs(vac.remaining) + ' Tage ueberzogen') +
+    '</div>' +
+  '</div>';
+  body.innerHTML = vacHtml;
   if(!pEvents.length){
-    body.innerHTML='<div class="pd-empty">Keine Termine für '+p.name+'.</div>';
+    body.innerHTML += '<div class="pd-empty">Keine Termine für '+p.name+'.</div>';
   } else {
     var nowStr=dstr(today.getFullYear(),today.getMonth(),today.getDate());
     var future=pEvents.filter(function(e){return e.end>=nowStr;});
@@ -652,7 +1192,7 @@ function openPersonDetail(pid){
     }
     if(future.length){html+='<div class="pd-section">Bevorstehend ('+future.length+')</div>';future.forEach(function(ev){html+=evHTML(ev);});}
     if(past.length){html+='<div class="pd-section">Vergangen ('+past.length+')</div>';past.forEach(function(ev){html+=evHTML(ev);});}
-    body.innerHTML=html;
+    body.innerHTML += html;
   }
   var view=document.getElementById('person-detail');
   view.style.display='flex';
@@ -663,6 +1203,102 @@ function closePersonDetail(){
   var view=document.getElementById('person-detail');
   view.classList.remove('open');
   setTimeout(function(){view.style.display='none';},280);
+}
+
+var _editingPersonId = null;
+
+function openEditPerson(){
+  if(!_editingPersonId) return;
+  var p = persons.find(function(x){return x.id===_editingPersonId;});
+  if(!p) return;
+
+  showSheet('<div class="sheet" onclick="event.stopPropagation()">' +
+    '<div class="sheet-handle"></div>' +
+    '<div class="sheet-title">Person bearbeiten</div>' +
+    '<div class="sheet-body">' +
+      '<div class="field"><label>Name</label>' +
+        '<input type="text" id="edit-p-name" value="'+p.name+'" placeholder="Name">' +
+      '</div>' +
+      '<div class="field"><label>Farbe</label>' +
+        '<div class="swatches" id="edit-sw-picks"></div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="sheet-actions">' +
+      '<button class="btn-cancel" onclick="closeSheetDirect()">Abbrechen</button>' +
+      '<button class="btn-save" onclick="saveEditPerson()">Speichern</button>' +
+    '</div>' +
+  '</div>');
+
+  // Set current color as selected
+  selectedColor = PALETTE.findIndex(function(c){return c.bg===p.color.bg;});
+  if(selectedColor < 0) selectedColor = 0;
+  renderEditSwatches();
+}
+
+function renderEditSwatches(){
+  var c = document.getElementById('edit-sw-picks');
+  if(!c) return;
+  c.innerHTML = '';
+  PALETTE.forEach(function(col, i){
+    var s = document.createElement('div');
+    s.className = 'sw' + (i===selectedColor?' sel':'');
+    s.style.cssText = 'background:'+col.bg+';border-color:'+(i===selectedColor?'#333':'transparent');
+    (function(idx){s.onclick=function(){selectedColor=idx;renderEditSwatches();};})(i);
+    c.appendChild(s);
+  });
+}
+
+async function saveEditPerson(){
+  if(!_editingPersonId) return;
+  var name = document.getElementById('edit-p-name').value.trim();
+  if(!name){ showToast('Bitte Namen eingeben'); return; }
+  var col = PALETTE[selectedColor];
+  var idx = persons.findIndex(function(x){return x.id===_editingPersonId;});
+  if(idx < 0) return;
+  persons[idx].name = name;
+  persons[idx].color = {bg:col.bg, text:col.text};
+  // Update sheets
+  pushToSheets('person',{id:persons[idx].id, name:name, colorBg:col.bg, colorText:col.text});
+  saveLocal();
+  closeSheetDirect();
+  // Refresh person detail header
+  var av = document.getElementById('pd-avatar');
+  av.style.background = col.bg; av.style.color = col.text;
+  av.textContent = ini(name);
+  document.getElementById('pd-name').textContent = name;
+  renderPeople();
+  renderCal();
+  showToast(name + ' gespeichert');
+}
+
+function confirmDeletePerson(){
+  if(!_editingPersonId) return;
+  var p = persons.find(function(x){return x.id===_editingPersonId;});
+  if(!p) return;
+  showSheet('<div class="sheet" onclick="event.stopPropagation()">' +
+    '<div class="sheet-handle"></div>' +
+    '<div class="sheet-title">Person löschen</div>' +
+    '<div class="sheet-body">' +
+      '<div style="font-size:15px;color:#1a1a1a;margin-bottom:8px">'+p.name+' wirklich löschen?</div>' +
+      '<div style="font-size:13px;color:#888;">Alle Termine dieser Person bleiben erhalten.</div>' +
+    '</div>' +
+    '<div class="sheet-actions">' +
+      '<button class="btn-cancel" onclick="closeSheetDirect()">Abbrechen</button>' +
+      '<button class="del-btn" style="flex:2" onclick="deletePerson()">Löschen</button>' +
+    '</div>' +
+  '</div>');
+}
+
+async function deletePerson(){
+  if(!_editingPersonId) return;
+  deleteFromSheets('person', _editingPersonId);
+  persons = persons.filter(function(x){return x.id!==_editingPersonId;});
+  saveLocal();
+  closeSheetDirect();
+  closePersonDetail();
+  renderPeople();
+  renderCal();
+  showToast('Person gelöscht');
 }
 
 
@@ -723,6 +1359,252 @@ function showSheet(html){document.getElementById('sheets-ui').innerHTML='<div cl
 function closeSheet(e){if(e.target.id==='sw')document.getElementById('sheets-ui').innerHTML='';}
 function closeSheetDirect(){document.getElementById('sheets-ui').innerHTML='';pendingFile=null;}
 function showToast(msg){var t=document.createElement('div');t.className='toast';t.textContent=msg;document.querySelector('.screen').appendChild(t);setTimeout(function(){t.remove();},2400);}
+
+// ---- Einstellungen ----
+
+
+function toggleSchulferien(show) {
+  localStorage.setItem('kk_schulferien', show ? '1' : '0');
+  if (show) {
+    loadSchulferien();
+  } else {
+    // Remove all school holiday events (pid:0, note:'Kanton St.Gallen')
+    events = events.filter(function(e) {
+      return !(e.pid === 0 && e.note === 'Kanton St.Gallen');
+    });
+    saveLocal();
+    SCHULFERIEN_LOADED = false;
+  }
+  renderCal();
+}
+
+function updateSchulferienToggle() {
+  var el = document.getElementById('schulferien-toggle');
+  if (el) {
+    var val = localStorage.getItem('kk_schulferien');
+    el.checked = (val !== '0');
+  }
+}
+
+function openSettings(){
+  renderLabelEditor();
+  renderVacationTracker();
+  updateSchulferienToggle();
+  var urlEl = document.getElementById('sheets-url-display');
+  if(urlEl) urlEl.textContent = SHEETS_URL || t('notConnected');
+  // Highlight active language button
+  ['de','en','pt'].forEach(function(l){
+    var btn = document.getElementById('lang-btn-'+l);
+    if(btn){
+      btn.style.borderColor = l===currentLang ? 'var(--green)' : 'transparent';
+      btn.style.background = l===currentLang ? 'var(--green)' : 'var(--bg2)';
+      btn.style.color = l===currentLang ? '#fff' : '#1a1a1a';
+    }
+  });
+  // Translate settings titles
+  var langTitle = document.getElementById('sv-lang-title');
+  if(langTitle) langTitle.textContent = t('language');
+  var svTitle = document.querySelector('.sv-title');
+  if(svTitle) svTitle.textContent = t('settings');
+  var labTitle = document.querySelector('#label-editor-list')?.previousElementSibling;
+  // Slide in
+  var view = document.getElementById('settings-view');
+  view.style.display = 'flex';
+  requestAnimationFrame(function(){requestAnimationFrame(function(){view.classList.add('open');});});
+}
+
+function changeLang(lang){
+  setLang(lang);
+  // Update button styles
+  ['de','en','pt'].forEach(function(l){
+    var btn = document.getElementById('lang-btn-'+l);
+    if(btn){
+      btn.style.borderColor = l===lang ? 'var(--green)' : 'transparent';
+      btn.style.background = l===lang ? 'var(--green)' : 'var(--bg2)';
+      btn.style.color = l===lang ? '#fff' : '#1a1a1a';
+    }
+  });
+  // Update settings page titles
+  var langTitle = document.getElementById('sv-lang-title');
+  if(langTitle) langTitle.textContent = t('language');
+  var svTitle = document.querySelector('.sv-title');
+  if(svTitle) svTitle.textContent = t('settings');
+  var savBtn = document.querySelector('.sv-save-btn');
+  if(savBtn) savBtn.textContent = t('save');
+  showToast(lang==='de'?'Sprache: Deutsch':lang==='en'?'Language: English':'Idioma: Português');
+}
+
+function closeSettings(){
+  var view = document.getElementById('settings-view');
+  view.classList.remove('open');
+  setTimeout(function(){view.style.display='none';}, 280);
+}
+
+function renderLabelEditor(){
+  var list = document.getElementById('label-editor-list');
+  if(!list) return;
+  list.innerHTML = '';
+  LABELS.forEach(function(l, i){
+    var item = document.createElement('div');
+    item.className = 'label-editor-item';
+    item.innerHTML =
+      '<div style="position:relative;width:36px;height:36px;flex-shrink:0;">' +
+        '<div class="label-color-btn" style="background:'+l.bg+';width:36px;height:36px;border-radius:50%;" onclick="triggerColorPicker('+i+')"></div>' +
+        '<input type="color" id="lbl-color-'+i+'" value="'+l.bg+'" ' +
+          'style="position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer;" ' +
+          'oninput="updateLabelColor('+i+', this.value)">' +
+      '</div>' +
+      '<input class="label-name-input" id="lbl-name-'+i+'" value="'+l.name+'" placeholder="Label Name">' +
+      '<div class="label-preview" id="lbl-prev-'+i+'" style="background:'+l.bg+'"></div>';
+    list.appendChild(item);
+  });
+}
+
+function triggerColorPicker(i){
+  document.getElementById('lbl-color-'+i).click();
+}
+
+function updateLabelColor(i, color){
+  // Update preview dot
+  var btn = document.querySelector('#label-editor-list .label-editor-item:nth-child('+(i+1)+') .label-color-btn');
+  if(btn) btn.style.background = color;
+  var prev = document.getElementById('lbl-prev-'+i);
+  if(prev) prev.style.background = color;
+}
+
+function saveSettings(){
+  // Read all label changes
+  LABELS.forEach(function(l, i){
+    var nameEl = document.getElementById('lbl-name-'+i);
+    var colorEl = document.getElementById('lbl-color-'+i);
+    if(nameEl) l.name = nameEl.value.trim() || l.name;
+    if(colorEl) l.bg = colorEl.value;
+  });
+  // Save to localStorage
+  try{ localStorage.setItem('kk_labels', JSON.stringify(LABELS)); }catch(e){}
+  closeSettings();
+  renderCal();
+  showToast('Labels gespeichert');
+}
+
+function loadLabels(){
+  try{
+    var saved = localStorage.getItem('kk_labels');
+    if(saved){
+      var parsed = JSON.parse(saved);
+      parsed.forEach(function(s, i){
+        if(LABELS[i]){ LABELS[i].name = s.name; LABELS[i].bg = s.bg; }
+      });
+    }
+  }catch(e){}
+}
+
+function resetSheetsUrl(){
+  if(confirm('Google Sheets URL zurücksetzen?')){
+    localStorage.removeItem('kk_sheets_url');
+    localStorage.removeItem('kk_skip');
+    SHEETS_URL = '';
+    closeSettings();
+    showToast('URL zurückgesetzt — bitte neu laden');
+    setTimeout(function(){location.reload();}, 1500);
+  }
+}
+
+
+// ================================================================
+// FERIENTAGE / VACATION TRACKER
+// ================================================================
+
+var VACATION_DAYS_DEFAULT = 25;
+
+function getVacationAllowance(pid) {
+  try {
+    var key = 'kk_vac_' + pid + '_' + today.getFullYear();
+    var val = localStorage.getItem(key);
+    return val !== null ? parseInt(val) : VACATION_DAYS_DEFAULT;
+  } catch(e) { return VACATION_DAYS_DEFAULT; }
+}
+
+function setVacationAllowance(pid, days) {
+  try {
+    var key = 'kk_vac_' + pid + '_' + today.getFullYear();
+    localStorage.setItem(key, String(days));
+  } catch(e) {}
+}
+
+function countVacationDays(pid, year) {
+  // Count days from confirmed vacation events for this person this year
+  var total = 0;
+  events.forEach(function(ev) {
+    if (ev.pid !== pid) return;
+    if (ev.lid !== 'ferien-best') return;
+    // Check if event overlaps with the target year
+    var startDate = pd(ev.start);
+    var endDate = pd(ev.end);
+    var yearStart = new Date(year, 0, 1);
+    var yearEnd = new Date(year, 11, 31);
+    // Clamp to year
+    var from = startDate < yearStart ? yearStart : startDate;
+    var to = endDate > yearEnd ? yearEnd : endDate;
+    if (from <= to) {
+      total += Math.round((to - from) / 86400000) + 1;
+    }
+  });
+  return total;
+}
+
+function renderVacationTracker() {
+  var list = document.getElementById('vacation-tracker-list');
+  if (!list) return;
+  var year = today.getFullYear();
+  var html = '';
+  persons.forEach(function(p) {
+    var allowance = getVacationAllowance(p.id);
+    var used = countVacationDays(p.id, year);
+    var remaining = allowance - used;
+    var pct = Math.min(100, Math.round(used / allowance * 100));
+    var barColor = remaining < 0 ? '#E53935' : remaining <= 5 ? '#EF9F27' : '#1D9E75';
+    html += '<div class="vacation-card">' +
+      '<div class="vacation-card-header">' +
+        '<div class="vacation-avatar" style="background:' + p.color.bg + ';color:' + p.color.text + '">' + ini(p.name) + '</div>' +
+        '<div class="vacation-name">' + p.name + '</div>' +
+        '<div class="vacation-year">' + year + '</div>' +
+      '</div>' +
+      '<div class="vacation-bar-wrap"><div class="vacation-bar" style="width:' + pct + '%;background:' + barColor + '"></div></div>' +
+      '<div class="vacation-stats">' +
+        '<span class="vacation-used" style="color:' + barColor + '">' + used + ' / ' + allowance + ' Tage</span>' +
+        '<span class="vacation-remaining">' + (remaining >= 0 ? remaining + ' verbleibend' : Math.abs(remaining) + ' ueberzogen') + '</span>' +
+      '</div>' +
+      '<div class="vacation-allowance-row">' +
+        '<span class="vacation-allowance-label">Anspruch (Tage/Jahr):</span>' +
+        '<input class="vacation-allowance-input" type="number" min="0" max="365" value="' + allowance + '" ' +
+          'onchange="updateVacationAllowance(' + p.id + ', this.value)" ' +
+          'oninput="updateVacationAllowance(' + p.id + ', this.value)">' +
+      '</div>' +
+    '</div>';
+  });
+  if (!persons.length) {
+    html = '<div style="padding:16px;text-align:center;color:#bbb;font-size:13px">Keine Personen vorhanden.</div>';
+  }
+  list.innerHTML = html;
+}
+
+function updateVacationAllowance(pid, val) {
+  var days = parseInt(val);
+  if (isNaN(days) || days < 0) return;
+  setVacationAllowance(pid, days);
+  // Re-render just the stats without closing settings
+  renderVacationTracker();
+}
+
+function getVacationSummary(pid) {
+  // Returns a short summary for person detail view
+  var year = today.getFullYear();
+  var allowance = getVacationAllowance(pid);
+  var used = countVacationDays(pid, year);
+  var remaining = allowance - used;
+  return { allowance: allowance, used: used, remaining: remaining, year: year };
+}
 
 // ---- Start ----
 if(SHEETS_URL){launch(true);}
