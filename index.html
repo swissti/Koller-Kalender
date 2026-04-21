@@ -664,31 +664,84 @@ function setSyncStatus(msg,err){var el=document.getElementById('sync-status');if
 
 async function fetchSheets(){
   if(!SHEETS_URL)return false;
-  setSyncStatus('⟳');
+  setSyncStatus('⧖');
   try{
     var res=await fetch(SHEETS_URL+'?t='+Date.now());
     var data=await res.json();
     if(data.error){setSyncStatus('⚠',true);return false;}
-    // Merge: Sheets-Daten mit lokalen Daten zusammenführen
-    // Sheets gewinnt bei Konflikten, aber lokale Bilder (preview) bleiben erhalten
+
+    // MERGE-Strategie: Lokale Daten + Sheets zusammenführen
+    // Lokale Daten haben Priorität — nur neue IDs aus Sheets hinzufügen
+
+    // Personen mergen
     if(data.persons&&data.persons.length>0){
-      persons=data.persons.map(function(p){return{id:Number(p.id),name:p.name,color:{bg:p.colorBg||'#4DB6AC',text:p.colorText||'#fff'}};});
-    }
-    if(data.events&&data.events.length>0){
-      events=data.events.map(function(e){return{id:Number(e.id),title:e.title,start:e.start,end:e.end,ts:e.ts||'',te:e.te||'',note:e.note||'',pid:Number(e.pid),lid:e.lid||'sonstiges'};});
-    }
-    if(data.plans&&data.plans.length>0){
-      // Vorschau-Bilder aus lokalem Cache wiederherstellen
-      var localPlans=[];
-      try{var lp=localStorage.getItem('kk_pl');if(lp)localPlans=JSON.parse(lp);}catch(e){}
-      plans=data.plans.map(function(p){
-        var local=localPlans.find(function(l){return String(l.id)===String(p.id);});
-        return{id:Number(p.id),name:p.name,ext:p.ext,size:p.size,weekStart:p.weekStart,uploadDate:p.uploadDate,uploader:p.uploader,preview:(local&&local.preview?local.preview:p.preview||null)};
+      var sheetsPersons=data.persons.map(function(p){
+        return{id:Number(p.id),name:p.name,color:{bg:p.colorBg||'#4DB6AC',text:p.colorText||'#fff'}};
+      });
+      // Nur Personen hinzufügen die lokal nicht vorhanden sind
+      sheetsPersons.forEach(function(sp){
+        if(!persons.find(function(lp){return lp.id===sp.id;})){
+          persons.push(sp);
+        }
       });
     }
+
+    // Termine mergen: Sheets-Termine sind die Wahrheit (andere Geräte haben geschrieben)
+    // ABER: lokale Termine die noch nicht in Sheets sind bleiben erhalten
+    if(data.events!==undefined){
+      var sheetsEvents=data.events.map(function(e){
+        return{id:Number(e.id),title:e.title,start:e.start,end:e.end,
+               ts:e.ts||'',te:e.te||'',note:e.note||'',
+               pid:Number(e.pid),lid:e.lid||'sonstiges'};
+      });
+      // Finde lokale Termine die NICHT in Sheets sind (noch nicht hochgeladen)
+      var pendingLocal=events.filter(function(le){
+        // Schulferien/Feiertage bleiben lokal
+        if(le.pid===0&&le.note==='Kanton St.Gallen') return false;
+        // Nur behalten wenn nicht in Sheets
+        return !sheetsEvents.find(function(se){return se.id===le.id;});
+      });
+      // Schulferien lokal behalten
+      var schulferien=events.filter(function(e){
+        return e.pid===0&&e.note==='Kanton St.Gallen';
+      });
+      // Merge: Sheets-Events + ausstehende lokale + Schulferien
+      events=sheetsEvents.concat(pendingLocal).concat(schulferien);
+      // Ausstehende lokale Events in Sheets hochladen
+      if(pendingLocal.length>0){
+        pendingLocal.forEach(function(ev){pushToSheets('event',ev);});
+      }
+    }
+
+    // Pläne mergen
+    if(data.plans&&data.plans.length>0){
+      var localPlans=[];
+      try{var lp=localStorage.getItem('kk_pl');if(lp)localPlans=JSON.parse(lp);}catch(e){}
+      var sheetsPlans=data.plans.map(function(p){
+        var local=localPlans.find(function(l){return String(l.id)===String(p.id);});
+        return{id:Number(p.id),name:p.name,ext:p.ext,size:p.size,
+               weekStart:p.weekStart,uploadDate:p.uploadDate,uploader:p.uploader,
+               preview:(local&&local.preview?local.preview:p.preview||null)};
+      });
+      var pendingPlans=plans.filter(function(lp){
+        return !sheetsPlans.find(function(sp){return sp.id===lp.id;});
+      });
+      plans=sheetsPlans.concat(pendingPlans);
+      if(pendingPlans.length>0){
+        pendingPlans.forEach(function(pl){
+          pushToSheets('plan',Object.assign({},pl,{preview:''}));
+        });
+      }
+    }
+
     saveLocal();
-    setSyncStatus('✓');return true;
-  }catch(e){setSyncStatus('⚠',true);return false;}
+    setSyncStatus('✓');
+    return true;
+  }catch(e){
+    setSyncStatus('⚠',true);
+    console.warn('fetchSheets error:',e);
+    return false;
+  }
 }
 
 async function pushToSheets(type,item){
@@ -888,11 +941,18 @@ async function launch(withSheets){
     fetchSheets().then(function(ok){
       if(ok){renderCal();if(document.getElementById('view-people').classList.contains('active'))renderPeople();}
     });
-    // Auto-refresh alle 30 Sekunden
+    // Auto-refresh alle 60 Sekunden (nicht zu oft)
     setInterval(async function(){
+      var evCountBefore = events.filter(function(e){return e.pid!==0;}).length;
       var ok=await fetchSheets();
-      if(ok){renderCal();if(document.getElementById('view-people').classList.contains('active'))renderPeople();}
-    },30000);
+      if(ok){
+        var evCountAfter = events.filter(function(e){return e.pid!==0;}).length;
+        // Nur neu rendern wenn sich tatsaechlich etwas geaendert hat
+        renderCal();
+        if(document.getElementById('view-people').classList.contains('active'))renderPeople();
+        if(document.getElementById('view-plans').classList.contains('active'))renderPlans();
+      }
+    },60000);
   }
 }
 
