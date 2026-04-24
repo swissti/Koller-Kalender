@@ -1,40 +1,49 @@
-// Koller Kalender Service Worker
-const CACHE = 'koller-kalender-v1';
-const FILES = ['./index.html', './manifest.json', './icon-192.png', './icon-512.png'];
+// Service Worker v4 - auto-clears cache on update
+var CACHE_NAME = 'koller-v4';
+var FILES = ['./', './index.html', './manifest.json'];
 
 self.addEventListener('install', function(e) {
+  // Skip waiting so new SW activates immediately
+  self.skipWaiting();
   e.waitUntil(
-    caches.open(CACHE).then(function(cache) {
+    caches.open(CACHE_NAME).then(function(cache) {
       return cache.addAll(FILES);
     })
   );
-  self.skipWaiting();
 });
 
 self.addEventListener('activate', function(e) {
   e.waitUntil(
+    // Delete ALL old caches
     caches.keys().then(function(keys) {
-      return Promise.all(keys.filter(function(k){return k!==CACHE;}).map(function(k){return caches.delete(k);}));
+      return Promise.all(
+        keys.filter(function(k) { return k !== CACHE_NAME; })
+            .map(function(k) { return caches.delete(k); })
+      );
+    }).then(function() {
+      // Take control of all clients immediately
+      return self.clients.claim();
     })
   );
-  self.clients.claim();
 });
 
 self.addEventListener('fetch', function(e) {
-  // Google Sheets Anfragen nicht cachen
-  if(e.request.url.includes('script.google.com')){
-    e.respondWith(fetch(e.request).catch(function(){return new Response('{}');}));
-    return;
-  }
-  e.respondWith(
-    caches.match(e.request).then(function(cached){
-      return cached || fetch(e.request).then(function(res){
+  // Network-first for HTML, cache-first for assets
+  if (e.request.url.includes('index.html') || e.request.url.endsWith('/')) {
+    e.respondWith(
+      fetch(e.request).then(function(res) {
         var clone = res.clone();
-        caches.open(CACHE).then(function(cache){cache.put(e.request, clone);});
+        caches.open(CACHE_NAME).then(function(cache) { cache.put(e.request, clone); });
         return res;
-      });
-    }).catch(function(){
-      return caches.match('./index.html');
-    })
-  );
+      }).catch(function() {
+        return caches.match(e.request);
+      })
+    );
+  } else {
+    e.respondWith(
+      caches.match(e.request).then(function(cached) {
+        return cached || fetch(e.request);
+      })
+    );
+  }
 });
