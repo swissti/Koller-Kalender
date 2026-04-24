@@ -525,7 +525,17 @@ function applyLangToDOM(){
 
 
 // ---- Sheets ----
-function setSyncStatus(msg,err){var el=document.getElementById('sync-status');if(el){el.textContent=msg;el.style.color=err?'#E53935':'#aaa';}}
+var _lastSyncError='';
+function setSyncStatus(msg,err,detail){
+  var el=document.getElementById('sync-status');
+  if(el){
+    el.textContent=msg;
+    el.style.color=err?'#E53935':'#aaa';
+    el.style.cursor=err?'pointer':'default';
+    if(err&&detail)_lastSyncError=detail;
+    el.onclick=err?function(){if(_lastSyncError)showToast(_lastSyncError.substring(0,80));}:null;
+  }
+}
 function sendToSheets(payload){
   if(!SHEETS_URL)return;
   var url=SHEETS_URL+'?payload='+encodeURIComponent(payload);
@@ -544,7 +554,7 @@ async function fetchSheets(){
   if(!SHEETS_URL)return false;setSyncStatus('\u29d6');
   try{
     var res=await fetch(SHEETS_URL+'?t='+Date.now());var data=await res.json();
-    if(data.error){setSyncStatus('\u26a0',true);return false;}
+    if(data.error){setSyncStatus('\u26a0',true);console.warn('Sheets error:',data.error);return false;}
     if(data.persons&&data.persons.length>0)persons=data.persons.map(function(p){return{id:Number(p.id),name:p.name,color:{bg:p.colorBg||'#4DB6AC',text:p.colorText||'#fff'}};});
     if(data.events!==undefined){
       // Load deleted IDs list to prevent re-adding deleted events
