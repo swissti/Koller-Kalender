@@ -254,12 +254,7 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
     <div class="view" id="view-plans" style="overflow:hidden;">
       <div class="page-header"><span id="plans-header-title">Arbeitspl&auml;ne</span></div>
       <div class="ap-scroll" id="ap-scroll"></div>
-      <div class="ap-upload-bar">
-        <button class="ap-upload-btn" onclick="openUploadSheet()">
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 12V4M6 6.5L9 4l3 2.5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 13v2a2 2 0 002 2h10a2 2 0 002-2v-2" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
-          <span id="upload-btn-text">Arbeitsplan hochladen</span>
-        </button>
-      </div>
+
     </div>
 
     <div class="view" id="view-people" style="overflow:hidden;">
@@ -307,6 +302,15 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
         </div>
 
         <div style="margin-top:20px;padding-top:20px;border-top:0.5px solid var(--border);">
+          <div class="sv-section-title">Arbeitspl&auml;ne</div>
+          <button onclick="openUploadSheet()" style="width:100%;padding:12px;border-radius:12px;border:none;background:var(--orange);color:#fff;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:12px;-webkit-tap-highlight-color:transparent;">
+            <svg width="16" height="16" viewBox="0 0 18 18" fill="none"><path d="M9 12V4M6 6.5L9 4l3 2.5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 13v2a2 2 0 002 2h10a2 2 0 002-2v-2" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+            Arbeitsplan hochladen
+          </button>
+          <div id="sv-plans-list"></div>
+        </div>
+
+        <div style="margin-top:20px;padding-top:20px;border-top:0.5px solid var(--border);">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
             <div class="sv-section-title" style="margin-bottom:0">Schulferien Kt. St.Gallen</div>
             <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
@@ -332,7 +336,7 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
       <div class="lb-header">
         <button class="lb-close" onclick="closeLightbox()"><svg width="14" height="14" viewBox="0 0 14 14"><path d="M2 2l10 10M12 2L2 12" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg></button>
         <div class="lb-title" id="lb-title"></div>
-        <button class="lb-close" onclick="deleteCurrentAP()" style="border-color:rgba(226,75,74,0.5);"><svg width="13" height="13" viewBox="0 0 13 13"><path d="M2 3h9M5 3V2h3v1M4 3l.5 8M6.5 3v8M9 3l-.5 8" stroke="#E24B4A" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+
       </div>
       <div class="lb-body" id="lb-body"></div>
       <div class="lb-footer"><div class="lb-meta" id="lb-meta"></div></div>
@@ -543,15 +547,45 @@ async function fetchSheets(){
     if(data.error){setSyncStatus('\u26a0',true);return false;}
     if(data.persons&&data.persons.length>0)persons=data.persons.map(function(p){return{id:Number(p.id),name:p.name,color:{bg:p.colorBg||'#4DB6AC',text:p.colorText||'#fff'}};});
     if(data.events!==undefined){
-      var se=data.events.map(function(e){return{id:Number(e.id),title:e.title,start:cleanDate(e.start),end:cleanDate(e.end),ts:e.ts||'',te:e.te||'',note:e.note||'',pid:Number(e.pid),lid:e.lid||'sonstiges'};});
-      var pending=events.filter(function(le){if(le.pid===0&&le.note==='Kanton St.Gallen')return false;return!se.find(function(s){return s.id===le.id;});});
+      // Load deleted IDs list to prevent re-adding deleted events
+      var deletedIds={};
+      try{var dl=localStorage.getItem('kk_deleted');if(dl)JSON.parse(dl).forEach(function(id){deletedIds[id]=true;});}catch(e){}
+      var se=data.events
+        .filter(function(e){return !deletedIds[Number(e.id)];})
+        .map(function(e){return{id:Number(e.id),title:e.title,start:cleanDate(e.start),end:cleanDate(e.end),ts:e.ts||'',te:e.te||'',note:e.note||'',pid:Number(e.pid),lid:e.lid||'sonstiges'};});
+      var pending=events.filter(function(le){if(le.pid===0&&le.note==='Kanton St.Gallen')return false;if(deletedIds[le.id])return false;return!se.find(function(s){return s.id===le.id;});});
       var sf=events.filter(function(e){return e.pid===0&&e.note==='Kanton St.Gallen';});
       events=se.concat(pending).concat(sf);
       if(pending.length)pending.forEach(function(ev){pushToSheets('event',ev);});
     }
     if(data.plans&&data.plans.length>0){
       var lp=[];try{var ls=localStorage.getItem('kk_pl');if(ls)lp=JSON.parse(ls);}catch(e){}
-      plans=data.plans.map(function(p){var loc=lp.find(function(l){return String(l.id)===String(p.id);});return{id:Number(p.id),name:p.name,ext:p.ext,size:p.size,weekStart:cleanDate(p.weekStart),uploadDate:p.uploadDate,uploader:p.uploader,preview:(loc&&loc.preview?loc.preview:null)};});
+      plans=data.plans.map(function(p){
+        var loc=lp.find(function(l){return String(l.id)===String(p.id);});
+        // Fix uploadDate if Sheets converted it to ISO timestamp
+        var ud=p.uploadDate?String(p.uploadDate):'';
+        if(ud.indexOf('T')>-1){var dt=new Date(ud);ud=dt.getDate()+'. '+['Jan','Feb','Mar','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'][dt.getMonth()]+' '+dt.getFullYear();}
+        return{id:Number(p.id),name:p.name,ext:p.ext,size:p.size,weekStart:cleanDate(p.weekStart),uploadDate:ud,uploader:p.uploader,preview:(loc&&loc.preview?loc.preview:(p.preview||null))};
+      });
+    }
+    // Load labels from Sheets if available
+    if(data.labels&&data.labels.data){
+      try{
+        var sheetLabels=JSON.parse(data.labels.data);
+        // Only update if Sheets has labels (shared config)
+        if(Array.isArray(sheetLabels)&&sheetLabels.length>0){
+          // Merge: keep IDs intact, update names and colors
+          sheetLabels.forEach(function(sl,i){
+            if(LABELS[i]){LABELS[i].name=sl.name;LABELS[i].bg=sl.bg;if(sl.text)LABELS[i].text=sl.text;}
+            else if(sl.id&&sl.name&&sl.bg){LABELS.push(sl);}
+          });
+          // Remove extra local labels if Sheets has fewer
+          if(sheetLabels.length<LABELS.length&&sheetLabels.length>0){
+            LABELS.splice(sheetLabels.length);
+          }
+          localStorage.setItem('kk_labels',JSON.stringify(LABELS));
+        }
+      }catch(e){}
     }
     saveLocal();setSyncStatus('\u2713');return true;
   }catch(e){setSyncStatus('\u26a0',true);return false;}
@@ -780,7 +814,7 @@ function renderPlans(){
     grouped[wk].forEach(function(ap){
       var fc=FILE_COLORS[ap.ext]||{bg:'#ECEFF1',text:'#37474F'};var cc='ap-card'+(iC?' current-week':iN?' next-week':'');
       var ib=ap.preview?'<img class="ap-img" src="'+ap.preview+'" onclick="openLightbox('+ap.id+')">':'<div class="ap-placeholder" onclick="openLightbox('+ap.id+')"><div style="background:'+fc.bg+';padding:10px 20px;border-radius:8px;font-size:22px;font-weight:700;color:'+fc.text+';text-transform:uppercase">'+ap.ext+'</div></div>';
-      html+='<div class="'+cc+'">'+ib+'<div class="ap-footer"><div class="ap-info"><div class="ap-name">'+ap.name+'</div><div class="ap-meta">'+ap.size+' \u00b7 '+ap.uploader+' \u00b7 '+ap.uploadDate+'</div></div><button class="ap-del" onclick="event.stopPropagation();deleteAP('+ap.id+')"><svg width="12" height="12" viewBox="0 0 12 12"><path d="M2 3h8M4.5 3V2h3v1M3.5 3l.4 7M6 3v7M8.5 3l-.4 7" stroke="#E24B4A" stroke-width="1.3" stroke-linecap="round"/></svg></button></div></div>';
+      html+='<div class="'+cc+'">'+ib+'<div class="ap-footer"><div class="ap-info"><div class="ap-name">'+ap.name+'</div><div class="ap-meta">'+ap.size+' \u00b7 '+ap.uploader+' \u00b7 '+ap.uploadDate+'</div></div></div></div>';
     });
     html+='</div>';
   });
@@ -796,16 +830,38 @@ function openUploadSheet(){
 }
 function updateWeekPrev(){var v=document.getElementById('ap-week-date').value;var el=document.getElementById('ap-week-prev');if(v&&el)el.textContent='Woche: '+fmtWeek(getMon(pd(v)));}
 function handleFileUpload(e){var f=e.target.files[0];if(!f)return;pendingFile=f;var el=document.getElementById('ap-sel-file');if(el)el.textContent='\u2713 '+f.name;e.target.value='';}
+
+function compressImage(dataUrl,maxW,maxH,quality,cb){
+  var img=new Image();
+  img.onload=function(){
+    var w=img.width,h=img.height;
+    var scale=Math.min(maxW/w,maxH/h,1);
+    var cw=Math.round(w*scale),ch=Math.round(h*scale);
+    var canvas=document.createElement('canvas');
+    canvas.width=cw;canvas.height=ch;
+    canvas.getContext('2d').drawImage(img,0,0,cw,ch);
+    cb(canvas.toDataURL('image/jpeg',quality||0.7));
+  };
+  img.src=dataUrl;
+}
 async function saveAP(){
   var wdv=document.getElementById('ap-week-date').value;if(!wdv){showToast(t('selectWeek'));return;}
   var uploader=document.getElementById('ap-uploader').value;
-  var now=new Date();var ud=String(now.getDate()).padStart(2,'0')+'.'+String(now.getMonth()+1).padStart(2,'0')+'.'+now.getFullYear();
+  var now=new Date();var ud=now.getDate()+'. '+['Jan','Feb','Mar','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'][now.getMonth()]+' '+now.getFullYear();
   var mon=getMon(pd(wdv));var wk=dstr(mon.getFullYear(),mon.getMonth(),mon.getDate());
   function add(name,ext,size,preview){
     var id=nextApId++;var ap={id:id,name:name,ext:ext,size:size,weekStart:wk,uploadDate:ud,uploader:uploader,preview:preview};
-    plans.push(ap);saveLocal();pushToSheets('plan',Object.assign({},ap,{preview:(preview&&preview.length<60000?preview:'')}));renderPlans();closeSheetDirect();showToast(t('saved'));pendingFile=null;
+    plans.push(ap);saveLocal();pushToSheets('plan',Object.assign({},ap,{preview:preview||''}));renderPlans();renderSettingsPlans();closeSheetDirect();showToast(t('saved'));pendingFile=null;
   }
-  if(pendingFile){var ext=pendingFile.name.split('.').pop().toLowerCase();var size=pendingFile.size<1048576?Math.round(pendingFile.size/1024)+' KB':(pendingFile.size/1048576).toFixed(1)+' MB';var isImg=['png','jpg','jpeg'].indexOf(ext)>=0;var reader=new FileReader();reader.onload=function(ev){add(pendingFile.name,ext,size,isImg?ev.target.result:null);};reader.readAsDataURL(pendingFile);}
+  if(pendingFile){var ext=pendingFile.name.split('.').pop().toLowerCase();var size=pendingFile.size<1048576?Math.round(pendingFile.size/1024)+' KB':(pendingFile.size/1048576).toFixed(1)+' MB';var isImg=['png','jpg','jpeg'].indexOf(ext)>=0;var reader=new FileReader();reader.onload=function(ev){
+          if(isImg){
+            compressImage(ev.target.result,1200,1200,0.75,function(compressed){
+              add(pendingFile.name,ext,size,compressed);
+            });
+          }else{
+            add(pendingFile.name,ext,size,null);
+          }
+        };reader.readAsDataURL(pendingFile);}
   else{add('Arbeitsplan ('+fmtWeek(mon)+')','png','\u2014',null);}
 }
 
@@ -923,7 +979,19 @@ function showDetail(id){
     (selectedEvent.note?'<div class="detail-row"><span style="font-size:18px">&#128221;</span>'+selectedEvent.note+'</div>':'')+
     '</div><div class="sheet-actions"><button class="del-btn" onclick="deleteEvent()">L\u00f6schen</button><button class="btn-edit" onclick="openEditEvent('+selectedEvent.id+')">Bearbeiten</button></div></div>');
 }
-async function deleteEvent(){if(!selectedEvent)return;deleteFromSheets('event',selectedEvent.id);events=events.filter(function(e){return e.id!==selectedEvent.id;});saveLocal();closeSheetDirect();renderCal();if(_currentDayDate)renderDayDetail(_currentDayDate);showToast(t('eventDeleted'));}
+async function deleteEvent(){if(!selectedEvent)return;
+  var delId=selectedEvent.id;
+  // Track deleted ID so it doesn't come back from Sheets
+  try{
+    var dl=[];try{var dls=localStorage.getItem('kk_deleted');if(dls)dl=JSON.parse(dls);}catch(e){}
+    if(dl.indexOf(delId)<0)dl.push(delId);
+    if(dl.length>200)dl=dl.slice(-200); // keep last 200 max
+    localStorage.setItem('kk_deleted',JSON.stringify(dl));
+  }catch(e){}
+  deleteFromSheets('event',delId);
+  events=events.filter(function(e){return e.id!==delId;});
+  saveLocal();closeSheetDirect();renderCal();if(_currentDayDate)renderDayDetail(_currentDayDate);showToast(t('eventDeleted'));
+}
 
 // ---- Add person ----
 function openAddPerson(){selectedColor=persons.length%PALETTE.length;showSheet('<div class="sheet" onclick="event.stopPropagation()"><div class="sheet-handle"></div><div class="sheet-title">Person hinzuf\u00fcgen</div><div class="sheet-body"><div class="field"><label>Name</label><input type="text" id="p-name" placeholder="Name"></div><div class="field"><label>Farbe</label><div class="swatches" id="sw-picks"></div></div></div><div class="sheet-actions"><button class="btn-cancel" onclick="closeSheetDirect()">Abbrechen</button><button class="btn-save" onclick="savePerson()">Hinzuf\u00fcgen</button></div></div>');renderSwatches();}
@@ -937,7 +1005,45 @@ function resetLogo(){currentLogoSrc=DEFAULT_LOGO;document.getElementById('logo-i
 
 // ---- Settings ----
 function openSettings(){
-  renderLabelEditor();renderVacationTracker();updateSchulferienToggle();
+  var stored=localStorage.getItem('kk_settings_auth');
+  if(!stored||Date.now()-parseInt(stored)>600000){
+    showSheet('<div class="sheet" onclick="event.stopPropagation()">'+
+      '<div class="sheet-handle"></div>'+
+      '<div class="sheet-title">&#128274; Einstellungen</div>'+
+      '<div class="sheet-body">'+
+        '<div class="field"><label>Passwort</label>'+
+          '<input type="password" id="settings-pw" placeholder="Passwort eingeben" '+
+            'onkeydown="if(event.key===\'Enter\')checkSettingsPw()">'+
+        '</div>'+
+        '<div id="settings-pw-err" style="color:var(--red);font-size:13px;margin-top:-8px;display:none;">&#10060; Falsches Passwort</div>'+
+      '</div>'+
+      '<div class="sheet-actions">'+
+        '<button class="btn-cancel" onclick="closeSheetDirect()">Abbrechen</button>'+
+        '<button class="btn-save" onclick="checkSettingsPw()">Entsperren</button>'+
+      '</div>'+
+    '</div>');
+    setTimeout(function(){var pw=document.getElementById('settings-pw');if(pw)pw.focus();},150);
+    return;
+  }
+  _openSettingsPanel();
+}
+
+function checkSettingsPw(){
+  var pw=document.getElementById('settings-pw');
+  if(!pw)return;
+  if(pw.value==='admin'){
+    localStorage.setItem('kk_settings_auth',String(Date.now()));
+    closeSheetDirect();
+    _openSettingsPanel();
+  }else{
+    var err=document.getElementById('settings-pw-err');
+    if(err)err.style.display='block';
+    pw.value='';pw.focus();
+  }
+}
+
+function _openSettingsPanel(){
+  renderLabelEditor();renderVacationTracker();renderSettingsPlans();updateSchulferienToggle();
   var urlEl=document.getElementById('sheets-url-display');if(urlEl)urlEl.textContent=SHEETS_URL||t('notConnected');
   var view=document.getElementById('settings-view');view.style.display='flex';
   requestAnimationFrame(function(){requestAnimationFrame(function(){view.classList.add('open');});});
@@ -1009,7 +1115,25 @@ function diffDays(a,b){return Math.round((pd(b)-pd(a))/86400000);}
 function getMon(date){var d=new Date(date);var day=d.getDay();d.setDate(d.getDate()-(day===0?6:day-1));d.setHours(0,0,0,0);return d;}
 function weekKey(date){var m=getMon(date);return dstr(m.getFullYear(),m.getMonth(),m.getDate());}
 function fmtWeek(mon){var m=new Date(mon);var s=new Date(m);s.setDate(s.getDate()+6);return m.getDate()+'. '+SHORT_MONTHS[m.getMonth()]+' \u2013 '+s.getDate()+'. '+SHORT_MONTHS[s.getMonth()]+' '+s.getFullYear();}
-function cleanDate(d){if(!d)return '';d=String(d);if(d.indexOf('T')>-1)d=d.substring(0,10);return d;}
+function cleanDate(d){
+  if(!d)return '';
+  d=String(d);
+  if(d.indexOf('T')>-1){
+    // Parse as local date to avoid timezone shift
+    // e.g. "2026-01-04T23:00:00.000Z" in UTC+1 = 2026-01-05
+    try{
+      var dt=new Date(d);
+      // Use local date parts to avoid timezone issue
+      var y=dt.getFullYear();
+      var m=String(dt.getMonth()+1).padStart(2,'0');
+      var day=String(dt.getDate()).padStart(2,'0');
+      return y+'-'+m+'-'+day;
+    }catch(e){
+      return d.substring(0,10);
+    }
+  }
+  return d;
+}
 
 // ---- Schulferien SG ----
 var SCHULFERIEN_SG=[
@@ -1079,6 +1203,44 @@ function getVacationSummary(pid){
   var year=today.getFullYear();var eff=getEffectiveAllowance(pid,year);var used=countVacationDays(pid,year);
   return{allowance:eff.total,base:eff.base,extra:eff.extra,carry:eff.carry,used:used,remaining:eff.total-used,year:year};
 }
+function renderSettingsPlans(){
+  var list=document.getElementById('sv-plans-list');if(!list)return;
+  if(!plans.length){
+    list.innerHTML='<div style="padding:12px;text-align:center;color:#bbb;font-size:13px;">Keine Arbeitspläne vorhanden.</div>';
+    return;
+  }
+  var html='<div style="display:flex;flex-direction:column;gap:8px;">';
+  plans.slice().sort(function(a,b){return b.weekStart.localeCompare(a.weekStart);}).forEach(function(ap){
+    var fc=FILE_COLORS[ap.ext]||{bg:'#ECEFF1',text:'#37474F'};
+    html+=
+      '<div style="background:var(--bg2);border-radius:12px;padding:12px;display:flex;align-items:center;gap:10px;">'+
+        (ap.preview?
+          '<img src="'+ap.preview+'" style="width:44px;height:44px;border-radius:8px;object-fit:cover;flex-shrink:0;">':
+          '<div style="width:44px;height:44px;border-radius:8px;background:'+fc.bg+';display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:'+fc.text+';text-transform:uppercase;flex-shrink:0;">'+ap.ext+'</div>'
+        )+
+        '<div style="flex:1;min-width:0;">'+
+          '<div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+ap.name+'</div>'+
+          '<div style="font-size:11px;color:#aaa;margin-top:2px;">'+ap.uploadDate+' · '+ap.uploader+'</div>'+
+        '</div>'+
+        '<button onclick="deleteAPFromSettings('+ap.id+')" style="width:32px;height:32px;border-radius:50%;border:1px solid rgba(226,75,74,0.4);background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;">'+
+          '<svg width="13" height="13" viewBox="0 0 12 12" fill="none"><path d="M2 3h8M4.5 3V2h3v1M3.5 3l.4 7M6 3v7M8.5 3l-.4 7" stroke="#E24B4A" stroke-width="1.3" stroke-linecap="round"/></svg>'+
+        '</button>'+
+      '</div>';
+  });
+  html+='</div>';
+  list.innerHTML=html;
+}
+
+function deleteAPFromSettings(id){
+  plans=plans.filter(function(a){return a.id!==id;});
+  try{localStorage.removeItem('kk_img_'+id);}catch(e){}
+  saveLocal();
+  deleteFromSheets('plan',id);
+  renderSettingsPlans();
+  renderPlans();
+  showToast('Arbeitsplan gelöscht');
+}
+
 function renderVacationTracker(){
   var list=document.getElementById('vacation-tracker-list');if(!list)return;
   var year=today.getFullYear();var html='';
@@ -1125,7 +1287,11 @@ function updateExtraDaysFromProfile(pid,year,val){var d=parseInt(val);if(isNaN(d
 
 // ---- Labels ----
 function loadLabels(){try{var s=localStorage.getItem('kk_labels');if(s){var p=JSON.parse(s);p.forEach(function(item,i){if(LABELS[i]){LABELS[i].name=item.name;LABELS[i].bg=item.bg;}else if(item.id&&item.name&&item.bg){LABELS.push(item);}});}}catch(e){}}
-function saveLabels(){try{localStorage.setItem('kk_labels',JSON.stringify(LABELS));}catch(e){}}
+function saveLabels(){
+  try{localStorage.setItem('kk_labels',JSON.stringify(LABELS));}catch(e){}
+  // Sync labels to Sheets so all users get the update
+  pushToSheets('labels',{id:'labels',data:JSON.stringify(LABELS)});
+}
 
 // ---- Language ----
 var LANG_FLAGS={de:'&#127465;&#127466;',en:'&#127468;&#127463;',pt:'&#127477;&#127481;'};
