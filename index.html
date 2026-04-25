@@ -363,6 +363,21 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 <input type="file" id="file-input" style="display:none" accept="image/*,.pdf,.xlsx,.xls" onchange="handleFileUpload(event)">
 <input type="file" id="logo-input" style="display:none" accept="image/*" onchange="handleLogoUpload(event)">
 <script>
+var APP_VERSION='2026-04-25-v1';
+// Force reload if version changed
+(function(){
+  var sv=localStorage.getItem('kk_version');
+  if(sv&&sv!==APP_VERSION){
+    // Clear old service worker cache
+    if('caches' in window){
+      caches.keys().then(function(keys){keys.forEach(function(k){caches.delete(k);});});
+    }
+    localStorage.setItem('kk_version',APP_VERSION);
+    location.reload(true);
+    return;
+  }
+  localStorage.setItem('kk_version',APP_VERSION);
+})();
 var SHEETS_URL=localStorage.getItem('kk_sheets_url')||'';
 var MONTHS=['Januar','Februar','M\u00e4rz','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
 var SHORT_MONTHS=['Jan','Feb','M\u00e4r','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
@@ -1306,7 +1321,29 @@ function saveLabels(){
 // ---- Language ----
 var LANG_FLAGS={de:'&#127465;&#127466;',en:'&#127468;&#127463;',pt:'&#127477;&#127481;'};
 
-if('serviceWorker' in navigator)window.addEventListener('load',function(){navigator.serviceWorker.register('./sw.js').catch(function(){});});
+if('serviceWorker' in navigator){
+  window.addEventListener('load',function(){
+    navigator.serviceWorker.register('./sw.js').then(function(reg){
+      // Check for updates every time the page loads
+      reg.update();
+      // When a new service worker is waiting, activate it immediately
+      reg.addEventListener('updatefound',function(){
+        var newWorker=reg.installing;
+        newWorker.addEventListener('statechange',function(){
+          if(newWorker.state==='installed'&&navigator.serviceWorker.controller){
+            // New version available - reload
+            newWorker.postMessage('skipWaiting');
+            location.reload();
+          }
+        });
+      });
+    }).catch(function(){});
+    // If controller changes, reload to get new version
+    navigator.serviceWorker.addEventListener('controllerchange',function(){
+      location.reload();
+    });
+  });
+}
 
 // ---- Start ----
 if(SHEETS_URL)launch(true);

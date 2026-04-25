@@ -1,49 +1,70 @@
-// Service Worker v4 - auto-clears cache on update
-var CACHE_NAME = 'koller-v4';
-var FILES = ['./', './index.html', './manifest.json'];
+// Service Worker v5 - aggressive update strategy
+var CACHE_NAME = 'koller-v5';
+var URLS = ['./', './index.html', './manifest.json'];
 
+// Install: cache files immediately
 self.addEventListener('install', function(e) {
-  // Skip waiting so new SW activates immediately
-  self.skipWaiting();
+  self.skipWaiting(); // activate immediately
   e.waitUntil(
     caches.open(CACHE_NAME).then(function(cache) {
-      return cache.addAll(FILES);
-    })
+      return cache.addAll(URLS);
+    }).catch(function(){}) // don't fail install if caching fails
   );
 });
 
+// Activate: delete ALL old caches immediately
 self.addEventListener('activate', function(e) {
   e.waitUntil(
-    // Delete ALL old caches
     caches.keys().then(function(keys) {
       return Promise.all(
-        keys.filter(function(k) { return k !== CACHE_NAME; })
-            .map(function(k) { return caches.delete(k); })
+        keys.map(function(k) {
+          if (k !== CACHE_NAME) {
+            console.log('Deleting old cache:', k);
+            return caches.delete(k);
+          }
+        })
       );
     }).then(function() {
-      // Take control of all clients immediately
-      return self.clients.claim();
+      return self.clients.claim(); // take control of all open pages
     })
   );
 });
 
+// Fetch: ALWAYS network first for HTML, then cache
 self.addEventListener('fetch', function(e) {
-  // Network-first for HTML, cache-first for assets
-  if (e.request.url.includes('index.html') || e.request.url.endsWith('/')) {
+  var url = e.request.url;
+  
+  // For the main HTML file: always try network first
+  if (url.indexOf('index.html') > -1 || url.endsWith('/') || url.endsWith('/Koller-Kalender')) {
     e.respondWith(
-      fetch(e.request).then(function(res) {
-        var clone = res.clone();
-        caches.open(CACHE_NAME).then(function(cache) { cache.put(e.request, clone); });
-        return res;
-      }).catch(function() {
-        return caches.match(e.request);
-      })
+      fetch(e.request, {cache: 'no-store'}) // bypass browser cache
+        .then(function(res) {
+          if (res && res.status === 200) {
+            var clone = res.clone();
+            caches.open(CACHE_NAME).then(function(cache) {
+              cache.put(e.request, clone);
+            });
+          }
+          return res;
+        })
+        .catch(function() {
+          return caches.match(e.request);
+        })
     );
-  } else {
-    e.respondWith(
-      caches.match(e.request).then(function(cached) {
-        return cached || fetch(e.request);
-      })
-    );
+    return;
+  }
+  
+  // For other resources: cache first
+  e.respondWith(
+    caches.match(e.request).then(function(cached) {
+      return cached || fetch(e.request);
+    })
+  );
+});
+
+// Listen for message to skip waiting (force update)
+self.addEventListener('message', function(e) {
+  if (e.data === 'skipWaiting') {
+    self.skipWaiting();
   }
 });
